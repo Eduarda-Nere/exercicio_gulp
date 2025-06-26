@@ -1,28 +1,38 @@
 const gulp = require('gulp');
 const sass = require('gulp-sass')(require('sass'));
-const uglify = require('gulp-uglify');
+const terser = require('gulp-terser');
 const imagemin = require('gulp-imagemin');
 
-// Compilar SASS
 function compilarSass() {
-    return gulp.src('scss/style.scss')
+    return gulp.src('scss/**/*.scss')
         .pipe(sass().on('error', sass.logError))
         .pipe(gulp.dest('dist/css'));
 }
 
-// Minificar JS
 function minificarJS() {
-    return gulp.src('js/script.js')
-        .pipe(uglify())
+    return gulp.src('js/**/*.js')
+        .pipe(terser())
         .pipe(gulp.dest('dist/js'));
 }
 
-// Comprimir imagens
 function comprimirImagens() {
     return gulp.src('img/*')
         .pipe(imagemin())
         .pipe(gulp.dest('dist/img'));
 }
 
-// Tarefa padrão
-exports.default = gulp.series(compilarSass, minificarJS, comprimirImagens);
+function watchFiles() {
+    gulp.watch('scss/**/*.scss', compilarSass);
+    gulp.watch('js/**/*.js', minificarJS);
+    gulp.watch('img/*', comprimirImagens);
+}
+
+exports.default = gulp.series(
+    gulp.parallel(compilarSass, minificarJS, comprimirImagens),
+    watchFiles
+);
+
+exports.sass = compilarSass;
+exports.js = minificarJS;
+exports.img = comprimirImagens;
+exports.watch = watchFiles;
